@@ -1,0 +1,14 @@
+{
+  "name": "Demo terrain",
+  "width": 2000,
+  "height": 2000,
+  "minElevation": 0,
+  "maxElevation": 120,
+  "contourInterval": 5,
+  "indexContourEvery": 5,
+  "verticalExaggeration": 2.4,
+  "source": "procedural",
+  "seed": 7,
+  "heightmap": null,
+  "map": null
+}
