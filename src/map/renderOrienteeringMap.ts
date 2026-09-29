@@ -154,18 +154,33 @@ export function renderOrienteeringMap(
     ctx.fill();
   }
 
-  // 7b. Stone walls (ISOM 521): solid black line with a small dot at each end.
+  // 7b. Stone walls (ISOM 521): thin black line with dots repeated at a regular interval.
   ctx.strokeStyle = ISOM.black;
-  ctx.lineWidth = 0.3 * mm;
+  ctx.fillStyle = ISOM.black;
+  ctx.lineWidth = 0.18 * mm;
+  const wallDotSpacing = 1.8 * mm;
   for (const w of terrain.features.walls) {
+    const pts = w.points.map(([x, y]) => [tx(x), ty(y)] as const);
     ctx.beginPath();
-    w.points.forEach(([x, y], i) => (i === 0 ? ctx.moveTo(tx(x), ty(y)) : ctx.lineTo(tx(x), ty(y))));
+    pts.forEach(([x, y], i) => (i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)));
     ctx.stroke();
-    for (const [x, y] of [w.points[0], w.points[w.points.length - 1]]) {
-      ctx.beginPath();
-      ctx.arc(tx(x), ty(y), 0.3 * mm, 0, Math.PI * 2);
-      ctx.fill();
+    // Walk the polyline, dropping a dot every `wallDotSpacing` pixels (starting half a gap in).
+    let untilNext = wallDotSpacing / 2;
+    ctx.beginPath();
+    for (let i = 0; i < pts.length - 1; i++) {
+      const [ax, ay] = pts[i];
+      const [bx, by] = pts[i + 1];
+      const len = Math.hypot(bx - ax, by - ay);
+      let d = untilNext;
+      for (; d <= len; d += wallDotSpacing) {
+        const x = ax + ((bx - ax) * d) / len;
+        const y = ay + ((by - ay) * d) / len;
+        ctx.moveTo(x + 0.3 * mm, y);
+        ctx.arc(x, y, 0.3 * mm, 0, Math.PI * 2);
+      }
+      untilNext = d - len;
     }
+    ctx.fill();
   }
 
   // 7c. Hunting towers (ISOM 525 small tower): a "Π" shape centred on the tower.
