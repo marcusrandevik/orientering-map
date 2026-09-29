@@ -61,3 +61,8 @@ enable "Camera follows slider" under Settings.
 Lakes, vegetation and features currently come from the procedural demo (`src/data/demoTerrain.ts`).
 Replacing them with GeoTIFF, OSM or Lantmäteriet data only requires producing the same `TerrainData`
 structure.
+
+## Credits
+
+The link-preview image (`public/og-image.jpg`) is [Orienteringskort bygholm 2005 detail.jpg](https://commons.wikimedia.org/wiki/File:Orienteringskort_bygholm_2005_detail.jpg)
+by Tage Baun and Preben Jørgensen, licensed under [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/).
