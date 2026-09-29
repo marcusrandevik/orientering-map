@@ -8,7 +8,9 @@ import type {
   MapFeatures,
   Point2,
   TerrainConfig,
+  Tower,
   Trail,
+  Wall,
 } from '../terrain/types';
 
 /**
@@ -234,6 +236,14 @@ const BUILDINGS: Building[] = [
   { x: 250, y: 360, width: 16, depth: 11, rotation: 0.05, wallHeight: 4 },
 ];
 
+/** Dry stone wall across the farm field, south of the farm road. */
+const WALLS: Wall[] = [
+  { points: [[1235, 165], [1400, 180], [1560, 190], [1700, 170], [1800, 150]], height: 1.2 },
+];
+
+/** Hunting tower in the north-western forest, overlooking a small clearing. */
+const TOWERS: Tower[] = [{ x: 590, y: 1600, height: 5, rotation: Math.PI }];
+
 const CONTROLS: Control[] = [
   { kind: 'start', number: 0, code: 0, x: 300, y: 250 },
   { kind: 'control', number: 1, code: 31, x: 960, y: 560 },
@@ -271,6 +281,8 @@ export function generateDemoFeatures(config: TerrainConfig, lake: Grid, elevatio
     if (inLake(x, y)) continue;
     if (trails.some((t) => distToPolyline(x, y, t.points) < 20)) continue;
     if (BUILDINGS.some((b) => Math.hypot(b.x - x, b.y - y) < 60)) continue;
+    if (WALLS.some((w) => distToPolyline(x, y, w.points) < 15)) continue;
+    if (TOWERS.some((tw) => Math.hypot(tw.x - x, tw.y - y) < 30)) continue;
     // Prefer slopes – boulders tend to sit on hillsides.
     const e = sampleGrid(elevation, config, x, y);
     const ex = sampleGrid(elevation, config, x + 10, y) - e;
@@ -284,6 +296,8 @@ export function generateDemoFeatures(config: TerrainConfig, lake: Grid, elevatio
     trails,
     boulders,
     buildings: BUILDINGS.filter((b) => !inLake(b.x, b.y)),
+    walls: WALLS,
+    towers: TOWERS.filter((tw) => !inLake(tw.x, tw.y)),
     controls: CONTROLS.filter((c) => !inLake(c.x, c.y)),
   };
 }

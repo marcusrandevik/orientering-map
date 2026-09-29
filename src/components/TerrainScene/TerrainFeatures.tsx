@@ -77,6 +77,8 @@ function placeTrees(data: TerrainData, assets: TerrainAssets) {
       if (rand() > TREE_PROBABILITY[veg]) continue;
       if (features.trails.some((tr) => distToPolyline(px, py, tr.points) < (tr.kind === 'road' ? 14 : 9))) continue;
       if (features.buildings.some((b) => Math.hypot(b.x - px, b.y - py) < Math.max(b.width, b.depth) + 10)) continue;
+      if (features.walls.some((w) => distToPolyline(px, py, w.points) < 7)) continue;
+      if (features.towers.some((tw) => Math.hypot(tw.x - px, tw.y - py) < 12)) continue;
 
       const ground = t.toWorldY(sampleGrid(data.elevation, config, px, py));
       const isConifer = veg === Veg.DenseForest ? rand() < 0.8 : rand() < 0.55;
@@ -186,6 +188,81 @@ export function TerrainFeatures({ terrain }: { terrain: TerrainAssets }) {
     const wallMesh = buildInstanced(wallGeo, wallMat, wallSpecs);
     const roofMesh = buildInstanced(roofGeo, roofMat, roofSpecs);
 
+    // Dry stone walls: short boxes following the ground along each segment.
+    const stoneSpecs: InstanceSpec[] = [];
+    const up = new THREE.Vector3(0, 1, 0);
+    for (const w of data.features.walls) {
+      const wallH = w.height * t.scale * 2.2;
+      const thickness = 0.014;
+      for (let i = 0; i < w.points.length - 1; i++) {
+        const [ax, ay] = w.points[i];
+        const [bx, by] = w.points[i + 1];
+        const len = Math.hypot(bx - ax, by - ay);
+        const pieces = Math.max(1, Math.ceil(len / 8));
+        const q = new THREE.Quaternion().setFromAxisAngle(up, Math.atan2(by - ay, bx - ax));
+        for (let p = 0; p < pieces; p++) {
+          const x0 = ax + ((bx - ax) * p) / pieces, y0 = ay + ((by - ay) * p) / pieces;
+          const x1 = ax + ((bx - ax) * (p + 1)) / pieces, y1 = ay + ((by - ay) * (p + 1)) / pieces;
+          const e0 = t.toWorldY(sampleGrid(data.elevation, cfg, x0, y0));
+          const e1 = t.toWorldY(sampleGrid(data.elevation, cfg, x1, y1));
+          const ground = Math.min(e0, e1);
+          const h = wallH * (0.85 + rand() * 0.3) + Math.abs(e1 - e0);
+          stoneSpecs.push({
+            matrix: new THREE.Matrix4().compose(
+              new THREE.Vector3(t.toWorldX((x0 + x1) / 2), ground - 0.01, t.toWorldZ((y0 + y1) / 2)),
+              q,
+              new THREE.Vector3((len / pieces) * t.scale * 1.05, h + 0.01, thickness),
+            ),
+            ground,
+          });
+        }
+      }
+    }
+    const stoneGeo = track(new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0));
+    const stoneMat = track(createClippedMaterial({ color: '#8f8d86', roughness: 0.95, flatShading: true }));
+    const stoneMesh = buildInstanced(stoneGeo, stoneMat, stoneSpecs);
+
+    // Hunting towers: four legs, a cabin and a pitched roof.
+    const towerWoodSpecs: InstanceSpec[] = [];
+    const towerRoofSpecs: InstanceSpec[] = [];
+    for (const tw of data.features.towers) {
+      const ground = t.toWorldY(sampleGrid(data.elevation, cfg, tw.x, tw.y));
+      const s = t.scale * 5.5;
+      const platform = ground + tw.height * s;
+      const cx = t.toWorldX(tw.x);
+      const cz = t.toWorldZ(tw.y);
+      const q = new THREE.Quaternion().setFromAxisAngle(up, tw.rotation);
+      const leg = 1.1 * s;
+      for (const [ox, oz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+        const off = new THREE.Vector3(ox * leg, 0, oz * leg).applyQuaternion(q);
+        towerWoodSpecs.push({
+          matrix: new THREE.Matrix4().compose(
+            new THREE.Vector3(cx + off.x, ground - 0.01, cz + off.z),
+            q,
+            new THREE.Vector3(0.12 * s, platform - ground + 0.01, 0.12 * s),
+          ),
+          ground,
+        });
+      }
+      const cabin = 1.5 * s;
+      towerWoodSpecs.push({
+        matrix: new THREE.Matrix4().compose(new THREE.Vector3(cx, platform, cz), q, new THREE.Vector3(cabin * 1.6, cabin, cabin * 1.6)),
+        ground,
+      });
+      towerRoofSpecs.push({
+        matrix: new THREE.Matrix4().compose(
+          new THREE.Vector3(cx, platform + cabin, cz),
+          q,
+          new THREE.Vector3(cabin * 1.9, cabin * 0.6, cabin * 1.9),
+        ),
+        ground,
+      });
+    }
+    const towerWoodMat = track(createClippedMaterial({ color: '#7a5634', roughness: 0.9, flatShading: true, side: THREE.DoubleSide }));
+    const towerRoofMat = track(createClippedMaterial({ color: '#3d3a36', roughness: 0.8, flatShading: true, side: THREE.DoubleSide }));
+    const towerWoodMesh = buildInstanced(wallGeo, towerWoodMat, towerWoodSpecs);
+    const towerRoofMesh = buildInstanced(roofGeo, towerRoofMat, towerRoofSpecs);
+
     // Control flags (orange/white prisms on a pole).
     const flagSpecs: InstanceSpec[] = [];
     const poleSpecs: InstanceSpec[] = [];
@@ -225,7 +302,7 @@ export function TerrainFeatures({ terrain }: { terrain: TerrainAssets }) {
 
     return {
       vegetation: [coniferMesh, broadleafMesh],
-      structures: [boulderMesh, wallMesh, roofMesh, poleMesh, flagMesh],
+      structures: [boulderMesh, wallMesh, roofMesh, stoneMesh, towerWoodMesh, towerRoofMesh, poleMesh, flagMesh],
       water,
       disposables,
     };

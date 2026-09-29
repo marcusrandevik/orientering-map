@@ -50,6 +50,12 @@ function LegendSwatch({ item }: { item: LegendItem }) {
           <span className="size-3 rounded-full border-[1.5px]" style={{ borderColor: item.color }} />
         </span>
       );
+    case 'tower':
+      return (
+        <span className={`${common} grid place-items-center bg-white`}>
+          <span className="size-2 border-x-[1.5px] border-t-[1.5px]" style={{ borderColor: item.color }} />
+        </span>
+      );
   }
 }
 

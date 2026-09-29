@@ -40,7 +40,7 @@ export const GROUND_VEG_RGB: Record<Veg, [number, number, number]> = {
 
 export interface LegendItem {
   label: string;
-  kind: 'fill' | 'line' | 'dashed' | 'dot' | 'circle' | 'hatch';
+  kind: 'fill' | 'line' | 'dashed' | 'dot' | 'circle' | 'hatch' | 'tower';
   color: string;
   secondary?: string;
 }
@@ -54,6 +54,8 @@ export const MAP_LEGEND: LegendItem[] = [
   { label: 'Lake', kind: 'fill', color: ISOM.water },
   { label: 'Marsh', kind: 'hatch', color: ISOM.marsh },
   { label: 'Road / path', kind: 'dashed', color: ISOM.black },
+  { label: 'Stone wall', kind: 'line', color: ISOM.black },
   { label: 'Boulder', kind: 'dot', color: ISOM.black },
+  { label: 'Hunting tower', kind: 'tower', color: ISOM.black },
   { label: 'Control', kind: 'circle', color: ISOM.course },
 ];

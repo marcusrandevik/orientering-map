@@ -154,6 +154,36 @@ export function renderOrienteeringMap(
     ctx.fill();
   }
 
+  // 7b. Stone walls (ISOM 521): solid black line with a small dot at each end.
+  ctx.strokeStyle = ISOM.black;
+  ctx.lineWidth = 0.3 * mm;
+  for (const w of terrain.features.walls) {
+    ctx.beginPath();
+    w.points.forEach(([x, y], i) => (i === 0 ? ctx.moveTo(tx(x), ty(y)) : ctx.lineTo(tx(x), ty(y))));
+    ctx.stroke();
+    for (const [x, y] of [w.points[0], w.points[w.points.length - 1]]) {
+      ctx.beginPath();
+      ctx.arc(tx(x), ty(y), 0.3 * mm, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // 7c. Hunting towers (ISOM 525 small tower): a "Π" shape centred on the tower.
+  ctx.lineWidth = 0.25 * mm;
+  ctx.lineCap = 'butt';
+  for (const tw of terrain.features.towers) {
+    const x = tx(tw.x);
+    const y = ty(tw.y);
+    const h = 0.7 * mm;
+    ctx.beginPath();
+    ctx.moveTo(x - h, y + h);
+    ctx.lineTo(x - h, y - h);
+    ctx.lineTo(x + h, y - h);
+    ctx.lineTo(x + h, y + h);
+    ctx.stroke();
+  }
+  ctx.lineCap = 'round';
+
   // 8. Course overprint.
   drawCourse(ctx, terrain.features.controls, tx, ty, mm);
 

@@ -88,6 +88,23 @@ export interface Building {
   wallHeight: number;
 }
 
+/** Dry stone wall (ISOM 521): a straight-segmented polyline. */
+export interface Wall {
+  points: Point2[];
+  /** Wall height in metres. */
+  height: number;
+}
+
+/** Hunting tower / shooting platform (ISOM 525 small tower). */
+export interface Tower {
+  x: number;
+  y: number;
+  /** Platform height in metres. */
+  height: number;
+  /** Direction the cabin faces, radians (counter-clockwise, map coordinates). */
+  rotation: number;
+}
+
 export type ControlKind = 'start' | 'control' | 'finish';
 
 export interface Control {
@@ -104,6 +121,8 @@ export interface MapFeatures {
   trails: Trail[];
   boulders: Boulder[];
   buildings: Building[];
+  walls: Wall[];
+  towers: Tower[];
   controls: Control[];
 }
 

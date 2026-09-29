@@ -41,7 +41,7 @@ src/
     generateTerrain.ts, noise.ts, grid.ts   procedural heights, seeded noise, grid helpers
     classify.ts               vegetation/ground classification (shared by 3D and 2D)
     generateContours.ts       marching-squares contours
-  data/demoTerrain.ts         demo lake, trails, buildings, boulders, course
+  data/demoTerrain.ts         demo lake, trails, buildings, stone walls, hunting tower, boulders, course
   map/
     renderOrienteeringMap.ts  draws the 2D ISOM-style map onto a canvas (texture of the plane)
     renderGroundTexture.ts    realistic ground texture for the 3D terrain
