@@ -49,7 +49,10 @@ function createElevationFunction(seed: number) {
   const ridgeB: Point2 = [1780, 480];
   return (x: number, y: number) => {
     let h = 0;
-    h += 72 * gauss(x, y, MAIN_HILL[0], MAIN_HILL[1], 400);
+    // A narrow eastern flank contrasts with the gentle west slope in the contours.
+    const hillDx = (x - MAIN_HILL[0]) / (x > MAIN_HILL[0] ? 150 : 400);
+    const hillDy = (y - MAIN_HILL[1]) / 400;
+    h += 72 * Math.exp(-(hillDx * hillDx + hillDy * hillDy) / 2);
     h += 50 * gauss(x, y, 480, 1520, 290);
     h += 38 * gauss(x, y, 1720, 1760, 250);
     const rd = distToSegment(x, y, ridgeA, ridgeB);
