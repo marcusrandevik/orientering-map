@@ -50,7 +50,7 @@ function createElevationFunction(seed: number) {
   return (x: number, y: number) => {
     let h = 0;
     // A narrow eastern flank contrasts with the gentle west slope in the contours.
-    const hillDx = (x - MAIN_HILL[0]) / (x > MAIN_HILL[0] ? 150 : 400);
+    const hillDx = (x - MAIN_HILL[0]) / (x > MAIN_HILL[0] ? 100 : 400);
     const hillDy = (y - MAIN_HILL[1]) / 400;
     h += 72 * Math.exp(-(hillDx * hillDx + hillDy * hillDy) / 2);
     h += 50 * gauss(x, y, 480, 1520, 290);
